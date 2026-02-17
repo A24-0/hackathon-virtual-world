@@ -6,16 +6,13 @@ export function useAgents(){
     const loading = ref(false)
     const selectedAgent = ref(null)
 
-    // Получаем агентов с бэка
     const fetchAgents = async () => {
         try{
             loading.value = true
-            
             const response = await api.get('/api/agents')
             agents.value = response.data
         } catch (error) {
             console.error('Ошибка загрузки агентов: ', error)
-            // Если бэкенд не работает - используем моковые данные
             agents.value = getMockAgents()
         } finally {
             loading.value = false
@@ -35,7 +32,6 @@ export function useAgents(){
     }
 }
 
-// моковые данные
 function getMockAgents() {
     return [
         {

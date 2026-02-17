@@ -10,7 +10,6 @@ export const api = axios.create({
   timeout: 10000
 })
 
-//обработка ошибок
 api.interceptors.response.use(
   response => response,
   error => {

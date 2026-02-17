@@ -61,11 +61,16 @@ const props = defineProps({
 
 <style scoped>
 .agent-inspector {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .agent-header {
@@ -119,5 +124,69 @@ const props = defineProps({
     color: #94a3b8;
     text-align: center;
     padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .agent-inspector {
+    min-height: 300px;
+    max-height: 400px;
+    padding: 15px;
+  }
+  
+  .agent-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+  }
+  
+  .agent-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+  }
+  
+  .agent-info h2 {
+    font-size: 20px;
+  }
+  
+  .section {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+  }
+  
+  .section h3 {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .agent-inspector {
+    min-height: 250px;
+    max-height: 350px;
+    padding: 12px;
+  }
+  
+  .agent-avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+  }
+  
+  .agent-info h2 {
+    font-size: 18px;
+  }
+  
+  .section h3 {
+    font-size: 14px;
+  }
+  
+  .trait-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  
+  .memory-item, .relationship-item {
+    padding: 8px;
+    font-size: 12px;
+  }
 }
 </style>

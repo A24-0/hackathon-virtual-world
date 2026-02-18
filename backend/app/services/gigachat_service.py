@@ -40,6 +40,11 @@ SCOPE = os.getenv("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
 
 
 def get_client():
+    if not CREDENTIALS:
+        raise ValueError(
+            "GIGACHAT_CREDENTIALS не установлен в переменных окружения. "
+            "Проверьте файл .env в папке backend/"
+        )
     return GigaChat(credentials=CREDENTIALS, scope=SCOPE, verify_ssl_certs=False)
 
 

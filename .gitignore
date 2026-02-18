@@ -1,0 +1,108 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+.venv
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# API Keys and Secrets
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+.secrets
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vite/
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# MongoDB
+*.bson
+

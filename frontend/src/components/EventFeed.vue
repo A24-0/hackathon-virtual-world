@@ -28,15 +28,21 @@ const getEventIcon = (type) => {
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
   const date = new Date(timestamp)
+  if (isNaN(date.getTime())) return 'Неверная дата'
   const now = new Date()
   const diff = now - date
-  const minutes = Math.floor(diff / 60000)
   
-  if (minutes < 1) return 'только что'
-  if (minutes < 60) return `${minutes} мин назад`
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (seconds < 10) return 'только что'
+  if (seconds < 60) return `${seconds} сек назад`
+  if (minutes < 60) return `${minutes} мин назад`
   if (hours < 24) return `${hours} ч назад`
-  return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  if (days < 7) return `${days} дн назад`
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 watch(() => props.events, () => {
@@ -60,8 +66,11 @@ watch(() => props.events, () => {
       >
         <div class="event-icon">{{ getEventIcon(event.type) }}</div>
         <div class="event-content">
-          <p class="event-text">{{ event.content }}</p>
-          <span class="event-time">{{ formatTime(event.timestamp) }}</span>
+          <p class="event-text">
+            <span v-if="event.agentName" class="agent-name">{{ event.agentName }}:</span>
+            <span v-else-if="event.description && event.description.includes('→')" class="agent-name">{{ event.description.split('→')[0].trim() }}:</span>
+            {{ event.content }}
+          </p>
         </div>
       </div>
       <div v-if="events.length === 0" class="empty-state">
@@ -79,9 +88,14 @@ watch(() => props.events, () => {
   flex-direction: column;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.event-feed:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .event-feed h2 {
@@ -128,6 +142,11 @@ watch(() => props.events, () => {
 
 .event-item.event-negative {
   border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.event-item.event-negative:hover {
+  background: #fee2e2;
 }
 
 .event-item.event-happy {
@@ -137,6 +156,8 @@ watch(() => props.events, () => {
 .event-icon {
   font-size: 24px;
   flex-shrink: 0;
+  color: #475569;
+  line-height: 1;
 }
 
 .event-content {
@@ -149,6 +170,13 @@ watch(() => props.events, () => {
   color: #334155;
   margin-bottom: 4px;
   line-height: 1.4;
+}
+
+.agent-name {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 15px;
+  margin-right: 4px;
 }
 
 .event-time {

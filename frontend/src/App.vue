@@ -1,21 +1,66 @@
 <script setup>
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted, onUnmounted, provide, watch } from 'vue'
 import { useAgents } from './composables/useAgents'
 import { useEvents } from './composables/useEvents'
+import { api } from './utils/api'
 import RelationsGraph from './components/RelationsGraph.vue'
 import AgentInspector from './components/AgentInspector.vue'
 import EventFeed from './components/EventFeed.vue'
 import ControlPanel from './components/ControlPanel.vue'
 
-const { agents, selectedAgent, selectAgent, fetchAgents } = useAgents()
+const { agents, selectedAgent, selectAgent, fetchAgents, updateAgent } = useAgents()
 const { events, fetchEvents, addEvent } = useEvents()
 const timeSpeed = ref(1.0)
+const relationsGraphRef = ref(null)
+let updateInterval = null
 
 provide('agents', agents)
 
+// Функция для обновления всех данных
+const refreshAll = async () => {
+  try {
+    await Promise.all([
+      fetchAgents(),
+      fetchEvents()
+    ])
+    // Обновляем граф отношений - принудительно
+    if (relationsGraphRef.value && relationsGraphRef.value.refresh) {
+      await relationsGraphRef.value.refresh()
+    }
+  } catch (error) {
+    console.error('Ошибка обновления данных:', error)
+  }
+}
+
 onMounted(async () => {
-  await fetchAgents()
-  await fetchEvents()
+  try {
+    await refreshAll()
+  } catch (error) {
+    console.error('Ошибка при загрузке данных:', error)
+  }
+  
+  // Автоматическое обновление каждую секунду для более быстрой реакции на изменения настроения и целей
+  updateInterval = setInterval(() => {
+    refreshAll().catch(err => console.error('Ошибка обновления:', err))
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (updateInterval) {
+    clearInterval(updateInterval)
+  }
+})
+
+// Обновляем данные при изменении скорости времени
+watch(timeSpeed, () => {
+  // Можно изменить интервал обновления в зависимости от скорости
+  if (updateInterval) {
+    clearInterval(updateInterval)
+    const interval = Math.max(1000, 5000 / timeSpeed.value)
+    updateInterval = setInterval(() => {
+      refreshAll()
+    }, interval)
+  }
 })
 
 const handleAgentClick = (agentId) => {
@@ -24,21 +69,44 @@ const handleAgentClick = (agentId) => {
 
 const handleAddEvent = async (eventData) => {
   await addEvent(eventData)
+  // Обновляем данные после добавления события
+  await refreshAll()
 }
 
 const handleSendMessage = async (messageData) => {
+  try {
   console.log('Отправить сообщение:', messageData)
-  await addEvent({
-    type: 'user_event',
-    content: `Сообщение для агента ${messageData.agentId}: ${messageData.message}`,
-    agentIds: [messageData.agentId],
-    mood: 'neutral'
-  })
+    // Отправляем сообщение через API
+    const response = await api.post(`/api/v1/text/agents/${messageData.agentId}/message`, {
+      content: messageData.message,
+      from_user: true
+    })
+    
+    // Обновляем все данные после отправки сообщения
+    await refreshAll()
+    
+    // Если выбран этот агент, обновляем его детали
+    if (selectedAgent.value && selectedAgent.value.id === messageData.agentId) {
+      await selectAgent(messageData.agentId)
+    }
+  } catch (error) {
+    console.error('Ошибка отправки сообщения:', error)
+    // В случае ошибки все равно обновляем данные
+    await refreshAll()
+  }
 }
 
-const handleUpdateTimeSpeed = (speed) => {
+const handleUpdateTimeSpeed = async (speed) => {
   timeSpeed.value = speed
   console.log('Скорость времени:', speed)
+  // Отправляем скорость на бэкенд
+  try {
+    await api.post('/api/v1/system/world/time-speed', null, {
+      params: { speed: speed }
+    })
+  } catch (error) {
+    console.error('Ошибка установки скорости времени:', error)
+  }
 }
 </script>
 
@@ -46,13 +114,14 @@ const handleUpdateTimeSpeed = (speed) => {
   <div class="app">
     <header class="header">
       <h1>Виртуальный мир</h1>
-      <p class="subtitle">Симулятор живых существ с памятью и эмоциями</p>
+      <p class="subtitle">Живые персонажи с памятью, эмоциями и отношениями</p>
     </header>
 
     <div class="main-container">
       <!-- Верхняя часть: Граф отношений (главный элемент) -->
       <div class="top-section">
         <RelationsGraph
+          ref="relationsGraphRef"
           :agents="agents"
           @agent-click="handleAgentClick"
         />
@@ -93,29 +162,32 @@ const handleUpdateTimeSpeed = (speed) => {
   background: #f8fafc;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 24px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: none;
+  padding: 32px 24px;
   text-align: center;
-  color: #1e293b;
+  color: #ffffff;
   width: 100%;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
-  font-size: 28px;
+  font-size: 32px;
   margin-bottom: 8px;
   font-weight: 700;
-  color: #0f172a;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .subtitle {
-  font-size: 15px;
-  color: #64748b;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 400;
 }
 
@@ -126,8 +198,20 @@ const handleUpdateTimeSpeed = (speed) => {
   padding: 24px;
   gap: 24px;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1800px;
   margin: 0 auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .top-section {
@@ -215,7 +299,8 @@ const handleUpdateTimeSpeed = (speed) => {
   border-radius: 12px;
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: #475569;
+  font-size: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 

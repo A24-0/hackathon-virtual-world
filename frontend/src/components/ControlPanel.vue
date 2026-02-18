@@ -121,12 +121,17 @@ const handleSpeedChange = (event) => {
 .control-panel {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.05);
   min-height: 400px;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+.control-panel:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .control-panel h2 {
@@ -164,12 +169,23 @@ const handleSpeedChange = (event) => {
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 14px;
+  color: #1e293b;
+  background: #ffffff;
   transition: border-color 0.2s;
+}
+
+.input::placeholder {
+  color: #94a3b8;
 }
 
 .input:focus {
   outline: none;
   border-color: #667eea;
+}
+
+.input option {
+  color: #1e293b;
+  background: #ffffff;
 }
 
 .btn {
@@ -195,6 +211,7 @@ const handleSpeedChange = (event) => {
 
 .btn-primary:disabled {
   background: #cbd5e0;
+  color: #64748b;
   cursor: not-allowed;
   transform: none;
 }
